@@ -1,0 +1,13 @@
+INPUT(
+./debug\abonneforfaits.o
+./debug\connection.o
+./debug\horaire.o
+./debug\main.o
+./debug\mainwindow.o
+./debug\reservation.o
+./debug\rreservations.o
+./debug\smart_abonnement.o
+./debug\moc_mainwindow.o
+./debug\moc_rreservations.o
+./debug\moc_smart_abonnement.o
+);

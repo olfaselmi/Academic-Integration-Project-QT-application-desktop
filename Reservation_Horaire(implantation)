@@ -1,0 +1,445 @@
+#include "rreservations.h"
+#include "ui_rreservations.h"
+#include "reservation.h"
+#include <QMessageBox>
+#include <QFile>
+#include <QTextStream>
+#include "horaire.h"
+#include <QDateTime>
+#include <QTime>
+#include <QTimer>
+
+RRESERVATIONS::RRESERVATIONS(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::RRESERVATIONS)
+{
+    ui->setupUi(this);
+    QTimer* timer=new QTimer(this);
+    connect(timer ,SIGNAL(timeout()),this,SLOT(showTime())) ;
+
+    ui->tableView_reservation->setModel(tmpreservation.afficher());
+    ui->tableView_reservation_2->setModel(tmpreservation.afficherliste());
+    ui->tableView_reservation_3->setModel(tmph.afficherhoraire());
+    timer->start();
+}
+void RRESERVATIONS::showTime()
+{
+
+
+    QTime time=QTime::currentTime();
+    QString time_text=time.toString("hh : mm : ss");
+    ui->Digital_Clock->setText(time_text);
+    ui->Digital_Clock_2->setText(time_text);
+}
+
+
+RRESERVATIONS::~RRESERVATIONS()
+{
+    delete ui;
+}
+
+void RRESERVATIONS::on_pushButton_17_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(1);
+}
+
+void RRESERVATIONS::on_pushButton_18_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+void RRESERVATIONS::on_OK_ajouter_reservation_2_clicked()
+{
+    int numero = ui->lineEdit_numero_2->text().toInt();
+    QString nom= ui->lineEdit_nom_2->text();
+    QString prenom= ui->lineEdit_prenom_2->text();
+    QString moyen= ui->lineEdit_moyen_2->text();
+    int nombre_place = ui->lineEdit_place_2->text().toInt();
+    QTime date = ui->date_3->time();
+    QString depart= ui->lineEdit_depart_2->text();
+    QString arrivee= ui->lineEdit_arrivee_2->text();
+  Reservation R(numero,nom,prenom,moyen,nombre_place,date,depart,arrivee);
+
+  if(R.ajouter())
+{
+      QMessageBox::information(nullptr, QObject::tr("gestion reservations"),
+                  QObject::tr("Réservation ajoutée avec succes.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+          ui->tableView_reservation->setModel(R.afficher());//refresh
+              ui->lineEdit_numero_2->setText("");
+               ui->lineEdit_nom_2->setText("");
+              ui->lineEdit_prenom_2->setText("");
+              ui->lineEdit_moyen_2->setText("");
+              ui->lineEdit_place_2->setText("");
+             ui->lineEdit_depart_2->setText("");
+             ui->lineEdit_arrivee_2->setText("");
+
+}
+  else
+      QMessageBox::critical(nullptr, QObject::tr("gestion reservations"),
+                  QObject::tr("Erreur!.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+}
+
+void RRESERVATIONS::on_OK_ajouter_reservation_6_clicked()
+{
+    int id ;
+    QTime hor;
+    id= ui->numerohor->text().toInt();
+    hor = ui->date_4->time();
+    Horaire h(id,hor);
+    if(h.ajouterhor())
+    {
+        QMessageBox::information(nullptr, QObject::tr("gestion reservations"),
+                    QObject::tr("Horaire ajouté.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+        ui->tableView_reservation_3->setModel(h.afficherhoraire());
+        ui->numerohor->setText("");
+
+
+    }
+    else {
+        QMessageBox::critical(nullptr, QObject::tr("gestion reservations"),
+                    QObject::tr("Erreur!.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+
+    }
+}
+
+void RRESERVATIONS::on_pushButton_chercher_reservation_2_clicked()
+{
+    int id;
+    id = ui->numerorescher->text().toInt();
+    QSqlQuery query;
+    QString res= QString::number(id);
+    query.prepare("Select *from Liste_Dattente where NUMERO_at = :id ");
+    query.bindValue(":id", res);
+    bool test=query.exec();
+
+    if(test)
+    {
+
+        while(query.next())
+        {
+             ui->lineEdit_numero_4->setText(query.value(0).toString());
+             ui->lineEdit_nom_4->setText(query.value(1).toString());
+             ui->lineEdit_prenom_4->setText(query.value(2).toString());
+             ui->lineEdit_moyen_4->setText(query.value(3).toString());
+             ui->lineEdit_place_4->setText(query.value(4).toString());
+             ui->date_2->setTime(query.value(5).toTime());
+             ui->lineEdit_depart_4->setText(query.value(6).toString());
+             ui->lineEdit_arrivee_4->setText(query.value(7).toString());
+        }
+
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, QObject::tr("Rechercher une réservation"),
+                    QObject::tr("Erreur !.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+
+    }
+}
+
+void RRESERVATIONS::on_pushButton_chercher_reservation_clicked()
+{
+    int id;
+    id = ui->numero_client_modireservation->text().toInt();
+    QSqlQuery query;
+    QString res= QString::number(id);
+    query.prepare("Select *from Réservation where NUMERO = :id ");
+    query.bindValue(":id", res);
+    bool test=query.exec();
+
+    if(test)
+    {
+
+        while(query.next())
+        {
+             ui->lineEdit_numero_2->setText(query.value(0).toString());
+             ui->lineEdit_nom_2->setText(query.value(1).toString());
+             ui->lineEdit_prenom_2->setText(query.value(2).toString());
+             ui->lineEdit_moyen_2->setText(query.value(3).toString());
+             ui->lineEdit_place_2->setText(query.value(4).toString());
+             ui->date_3->setTime(query.value(5).toTime());
+             ui->lineEdit_depart_2->setText(query.value(6).toString());
+             ui->lineEdit_arrivee_2->setText(query.value(7).toString());
+        }
+
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, QObject::tr("Rechercher une réservation"),
+                    QObject::tr("Erreur !.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+
+    }
+}
+
+void RRESERVATIONS::on_numero_client_rechireservation_textChanged(const QString &arg1)
+{
+    Reservation r;
+      ui->tableView_affirechercher->setModel(r.afficher_avec_id(arg1));
+}
+
+void RRESERVATIONS::on_supprimerres_clicked()
+{
+    Reservation R;
+
+    int id ;
+    id=ui->numero_client_modireservation->text().toInt();
+
+    if(R.supprimer(id))
+    {
+        QMessageBox::information(nullptr, QObject::tr("Gestion réservation"),
+                    QObject::tr("une reservation a été supprimée!.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+        ui->tableView_reservation->setModel(R.afficher());//refresh
+        ui->numero_client_modireservation->setText(" ");
+
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, QObject::tr("Gestion réservation"),
+                    QObject::tr("Erreur !.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+    }
+}
+
+void RRESERVATIONS::on_pushButton_4_clicked()
+{
+    int numero = ui->lineEdit_numero_2->text().toInt();
+    QString nom= ui->lineEdit_nom_2->text();
+    QString prenom= ui->lineEdit_prenom_2->text();
+    QString moyen= ui->lineEdit_moyen_2->text();
+    int nombre_place = ui->lineEdit_place_2->text().toInt();
+    QTime date = ui->date_3->time();
+    QString depart= ui->lineEdit_depart_2->text();
+    QString arrivee= ui->lineEdit_arrivee_2->text();
+  Reservation R(numero,nom,prenom,moyen,nombre_place,date,depart,arrivee);
+
+  if(R.modifier(numero))
+{
+      QMessageBox::information(nullptr, QObject::tr("gestion reservations"),
+                  QObject::tr("Réservation modifiéeavec succes.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+          ui->tableView_reservation->setModel(R.afficher());//refresh
+              ui->lineEdit_numero_2->setText("");
+               ui->lineEdit_nom_2->setText("");
+              ui->lineEdit_prenom_2->setText("");
+              ui->lineEdit_moyen_2->setText("");
+              ui->lineEdit_place_2->setText("");
+            // ui->lineEdit_date_2->setText("");
+             ui->lineEdit_depart_2->setText("");
+             ui->lineEdit_arrivee_2->setText("");
+
+}
+  else
+      QMessageBox::critical(nullptr, QObject::tr("gestion reservations"),
+                  QObject::tr("Erreur!.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+}
+
+void RRESERVATIONS::on_pushButton_15_clicked()
+{
+    int id ;
+    QTime hor;
+    id= ui->numerohor->text().toInt();
+    hor = ui->date_4->time();
+    Horaire h(id,hor);
+    if(h.modifierhor(id))
+    {
+        QMessageBox::information(nullptr, QObject::tr("gestion reservations"),
+                    QObject::tr("Horaire modifié.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+        ui->tableView_reservation_3->setModel(h.afficherhoraire());
+        ui->numerohor->setText("");
+
+
+    }
+    else {
+        QMessageBox::critical(nullptr, QObject::tr("gestion reservations"),
+                    QObject::tr("Erreur!.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+
+    }
+}
+
+void RRESERVATIONS::on_pushButton_5_clicked()
+{
+    int numero = ui->lineEdit_numero_2->text().toInt();
+    QString nom= ui->lineEdit_nom_2->text();
+    QString prenom= ui->lineEdit_prenom_2->text();
+    QString moyen= ui->lineEdit_moyen_2->text();
+    int nombre_place = ui->lineEdit_place_2->text().toInt();
+    QTime date = ui->date_3->time();
+    QString depart= ui->lineEdit_depart_2->text();
+    QString arrivee= ui->lineEdit_arrivee_2->text();
+  Reservation R(numero,nom,prenom,moyen,nombre_place,date,depart,arrivee);
+
+  if(R.ajouter_dans_liste())
+{
+      QMessageBox::information(nullptr, QObject::tr("gestion reservations"),
+                  QObject::tr("Réservation ajoutée dans la liste avec succes.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+          ui->tableView_reservation_2->setModel(R.afficherliste());//refresh
+              ui->lineEdit_numero_2->setText("");
+               ui->lineEdit_nom_2->setText("");
+              ui->lineEdit_prenom_2->setText("");
+              ui->lineEdit_moyen_2->setText("");
+              ui->lineEdit_place_2->setText("");
+             //ui->lineEdit_date_2->setText("");
+             ui->lineEdit_depart_2->setText("");
+             ui->lineEdit_arrivee_2->setText("");
+             R.supprimer(numero);
+             ui->tableView_reservation->setModel(R.afficher());
+}
+  else
+      QMessageBox::critical(nullptr, QObject::tr("gestion reservations"),
+                  QObject::tr("Erreur!.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+}
+
+void RRESERVATIONS::on_supprimerres_3_clicked()
+{
+    int id = ui->numero_client_modireservation_3->text().toInt();
+    Horaire h;
+    if(h.supprimehor(id))
+    {
+        QMessageBox::information(nullptr, QObject::tr("gestion reservations"),
+                    QObject::tr("Horaire supprimé.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+        ui->tableView_reservation_3->setModel(h.afficherhoraire());
+        ui->numero_client_modireservation_3->setText("");
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, QObject::tr("gestion reservations"),
+                    QObject::tr("Erreur!.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+    }
+}
+
+void RRESERVATIONS::on_pushButton_chercher_reservation_3_clicked()
+{
+    int id = ui->numero_client_modireservation_3->text().toInt();
+    QSqlQuery query;
+    QString res= QString::number(id);
+    query.prepare("Select *from Horaire where Id_horaire = :id ");
+    query.bindValue(":id", res);
+    bool test=query.exec();
+
+    if(test)
+    {
+
+        while(query.next())
+        {
+             ui->numerohor->setText(query.value(0).toString());
+
+             ui->date_4->setTime(query.value(1).toTime());
+        }
+
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, QObject::tr("Rechercher un horaire"),
+                    QObject::tr("Erreur !.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+
+    }
+}
+
+void RRESERVATIONS::on_OK_ajouter_reservation_4_clicked()
+{
+    int numero = ui->lineEdit_numero_4->text().toInt();
+    QString nom= ui->lineEdit_nom_4->text();
+    QString prenom= ui->lineEdit_prenom_4->text();
+    QString moyen= ui->lineEdit_moyen_4->text();
+    int nombre_place = ui->lineEdit_place_4->text().toInt();
+   QTime date = ui->date_2->time();
+    QString depart= ui->lineEdit_depart_4->text();
+    QString arrivee= ui->lineEdit_arrivee_4->text();
+  Reservation R(numero,nom,prenom,moyen,nombre_place,date,depart,arrivee);
+
+  if(R.ajouter())
+{
+      QMessageBox::information(nullptr, QObject::tr("gestion reservations"),
+                  QObject::tr("Réservation confirmée avec succes.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+          ui->tableView_reservation->setModel(R.afficher());//refresh
+
+              ui->lineEdit_numero_4->setText("");
+               ui->lineEdit_nom_4->setText("");
+              ui->lineEdit_prenom_4->setText("");
+              ui->lineEdit_moyen_4->setText("");
+              ui->lineEdit_place_4->setText("");
+             //ui->lineEdit_date_4->setText("");
+             ui->lineEdit_depart_4->setText("");
+             ui->lineEdit_arrivee_4->setText("");
+             R.supprimerelemliste(numero);
+             ui->tableView_reservation_2->setModel(R.afficherliste());
+
+}
+  else
+      QMessageBox::critical(nullptr, QObject::tr("gestion reservations"),
+                  QObject::tr("Erreur!.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+
+}
+
+void RRESERVATIONS::on_supprimerres_2_clicked()
+{
+    int id = ui->numerorescher->text().toInt();
+    Reservation R;
+    if(R.supprimerelemliste(id))
+    {
+        QMessageBox::information(nullptr, QObject::tr("gestion reservations"),
+                    QObject::tr("Reservation supprimée.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+        ui->tableView_reservation_2->setModel(R.afficherliste());
+        ui->numerorescher->setText("");
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, QObject::tr("gestion reservations"),
+                    QObject::tr("Erreur!.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+    }
+}
+
+void RRESERVATIONS::on_pushButton_2_clicked()
+{
+    QSqlQuery qur;
+    QFile file("C:/Users/mulgan thétys/Desktop/QT_projet_module/Projet_Transports/myfile.txt") ;
+    if(!file.open(QFile::WriteOnly | QFile::Text ))
+    {
+        QMessageBox::critical(nullptr, QObject::tr("Enregistrer"),
+                    QObject::tr("impossible d'ouvrir le fichier.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+    }
+    else
+    {
+
+        QTextStream  out(&file) ;
+        qur.prepare("Select *from Réservation ");
+        qur.exec();
+        out<<"---------------------liste Réservation------------------------------ "<<endl;
+        int i=1 ;
+        while(qur.next())
+        {
+            out<<"-------Réservation : "<<i<<"-------------- "<<endl;
+            out<<"NUMERO : "<<qur.value(0).toInt()<<endl << "NOM : "  <<qur.value(1).toString()<<endl <<"PRENOM : "  <<qur.value(2).toString()<<endl<<"MOYEN : " <<qur.value(3).toString()<<endl <<"NOMBRE_PLACE : "  <<qur.value(4).toInt() <<endl << "HORAIRE : " <<qur.value(5).toString()<<endl << "DEPART : "<<qur.value(6).toString()<<endl << "ARRIVEE : "<<qur.value(7).toString()<<endl;
+            i++ ;
+        }
+        //file.flush() ;
+        file.close() ;
+        QMessageBox::information(nullptr, QObject::tr("Enregistrement"),
+                    QObject::tr("operation reussie.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+    }
+}
+
+void RRESERVATIONS::on_pushButton_6_clicked()
+{
+    ui->tableView_reservation->setModel(tmpreservation.trier());
+}

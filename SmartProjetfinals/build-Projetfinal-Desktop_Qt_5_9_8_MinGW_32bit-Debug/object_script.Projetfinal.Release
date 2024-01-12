@@ -1,0 +1,13 @@
+INPUT(
+./release\abonneforfaits.o
+./release\connection.o
+./release\horaire.o
+./release\main.o
+./release\mainwindow.o
+./release\reservation.o
+./release\rreservations.o
+./release\smart_abonnement.o
+./release\moc_mainwindow.o
+./release\moc_rreservations.o
+./release\moc_smart_abonnement.o
+);

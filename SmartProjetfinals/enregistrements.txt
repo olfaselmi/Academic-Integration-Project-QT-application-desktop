@@ -1,0 +1,19 @@
+---------------------liste Réservation------------------------------ 
+-------Réservation : 1-------------- 
+NUMERO : 555
+NOM : ngbo
+PRENOM : eliele
+MOYEN : train
+NOMBRE_PLACE : 1
+HORAIRE : 2019-12-11T21:40:00
+DEPART : bangui
+ARRIVEE : yaounde
+-------Réservation : 2-------------- 
+NUMERO : 777
+NOM : mayele
+PRENOM : mulgan
+MOYEN : bus
+NOMBRE_PLACE : 4
+HORAIRE : 2019-12-11T19:00:00
+DEPART : tunis
+ARRIVEE : dheli
